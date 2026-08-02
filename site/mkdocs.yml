@@ -1,0 +1,94 @@
+site_name: TileFoundry
+site_url: https://tile-ai.github.io/TileFoundry.github.io/
+site_description: A tile-based, agentic platform for automatic high-performance program generation across hardware.
+repo_url: https://github.com/tile-ai/TileFoundry
+repo_name: tile-ai/TileFoundry
+
+theme:
+  name: material
+  language: en
+  font:
+    text: Hanken Grotesk
+    code: Space Mono
+  palette:
+    scheme: default
+    primary: red
+    accent: deep orange
+  features:
+    - navigation.expand
+    - navigation.top
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+
+exclude_docs: |
+  blog/
+  assets/data/qwen35-flywheel-session.jsonl
+  assets/mark.svg
+  javascripts/session-player.js
+  plans/
+  policies/
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 2
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - Tutorial:
+      - Overview: tutorial/index.md
+      - Describe a model: tutorial/migrate.md
+      - Make it fast: tutorial/optimize.md
+  - Specifications:
+      - Architecture: spec/architecture.md
+      - Core IR: spec/core-ir.md
+      - HIR: spec/hir.md
+      - TIR: spec/tir.md
+      - Type system: spec/types.md
+      - Shard and layout: spec/shard.md
+      - Parser: spec/parser.md
+      - Semantic analysis: spec/semantic-analysis.md
+      - Analysis: spec/analysis.md
+      - Schedule: spec/schedule.md
+      - Passes: spec/passes.md
+      - Target: spec/target.md
+      - Code generation: spec/codegen.md
+      - Runtime: spec/runtime.md
+      - Evaluator: spec/evaluator.md
+      - Inspection: spec/inspection.md
+      - Visitor and mutator: spec/visitor-mutator.md
+      - Visitor registry: spec/visitor-registry.md
+      - Command-line interface: spec/cli.md
+      - Code organization: spec/code-organization.md
+  - Development: develop.md
+
+copyright: Copyright &copy; 2026 TileFoundry contributors

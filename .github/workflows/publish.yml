@@ -1,0 +1,80 @@
+name: Publish TileFoundry Site
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: TileFoundry branch, tag, or SHA to render
+        required: false
+        default: main
+        type: string
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+env:
+  UPSTREAM_REPOSITORY: tile-ai/TileFoundry
+  UPSTREAM_REF: ${{ inputs.source_ref || 'main' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Pages repository
+        uses: actions/checkout@v7
+        with:
+          path: pages
+
+      - name: Checkout TileFoundry source
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ env.UPSTREAM_REPOSITORY }}
+          ref: ${{ env.UPSTREAM_REF }}
+          path: upstream
+          persist-credentials: false
+          token: ${{ secrets.TILEFOUNDRY_READ_TOKEN || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pages/site/requirements.txt
+
+      - name: Install documentation dependencies
+        run: python -m pip install --requirement pages/site/requirements.txt
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Assemble documentation source
+        id: assemble
+        run: |
+          assembled_source="$(mktemp -d)/source"
+          bash pages/scripts/assemble-site.sh upstream pages/site "$assembled_source"
+          echo "source=$assembled_source" >> "$GITHUB_OUTPUT"
+
+      - name: Build documentation site
+        run: mkdocs build --strict --config-file "${{ steps.assemble.outputs.source }}/mkdocs.yml" --site-dir "$RUNNER_TEMP/site"
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ${{ runner.temp }}/site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
