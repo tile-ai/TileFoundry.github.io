@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Cascadia+Code:ital,wght@0,200..700;1,200..700&display=swap");
 
 :root {
   --tf-paper: #f3ede1;
@@ -14,7 +14,7 @@
   --tf-line-soft: rgba(25, 26, 22, 0.07);
   --tf-display: "Bricolage Grotesque", "PingFang SC", "Microsoft YaHei", sans-serif;
   --tf-body: "Hanken Grotesk", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --tf-mono: "Space Mono", ui-monospace, monospace;
+  --tf-mono: "Cascadia Code NF", "Cascadia Code", ui-monospace, monospace;
 }
 
 [data-md-color-scheme="default"] {
@@ -392,29 +392,63 @@ body,
   line-height: 1.55;
 }
 
-/* Pygments tokens intentionally follow the deck's Atom One Light code palette. */
+/* Pygments tokens follow VS Code's Quiet Light, scope for scope. Plain names
+   are left inheriting the page ink so tokenised and untokenised text agree. */
+
+/* comment #aaaaaa italic -- the preprocessor comment is the one that is not */
 .md-typeset .highlight .c,
-.md-typeset .highlight .c1,
 .md-typeset .highlight .ch,
 .md-typeset .highlight .cm,
+.md-typeset .highlight .c1,
+.md-typeset .highlight .cs { color: #aaaaaa; font-style: italic; }
 .md-typeset .highlight .cp,
-.md-typeset .highlight .cpf,
-.md-typeset .highlight .cs { color: #a0a1a7; font-style: italic; }
+.md-typeset .highlight .cpf { color: #aaaaaa; }
+
+/* keyword, storage #4b69c6 -- and the tag that shares the scope */
 .md-typeset .highlight .k,
-.md-typeset .highlight .kc,
 .md-typeset .highlight .kd,
 .md-typeset .highlight .kn,
 .md-typeset .highlight .kp,
 .md-typeset .highlight .kr,
+.md-typeset .highlight .ow,
+.md-typeset .highlight .nt { color: #4b69c6; }
+
+/* storage.type, support.type, variable #7a3e9d */
 .md-typeset .highlight .kt,
-.md-typeset .highlight .ow { color: #a626a4; }
-.md-typeset .highlight .na,
-.md-typeset .highlight .nb,
+.md-typeset .highlight .nv,
+.md-typeset .highlight .vc,
+.md-typeset .highlight .vg,
+.md-typeset .highlight .vi,
+.md-typeset .highlight .vm { color: #7a3e9d; }
+
+/* entity.name.type, entity.name.namespace #7a3e9d bold */
 .md-typeset .highlight .nc,
-.md-typeset .highlight .ne,
+.md-typeset .highlight .nn { color: #7a3e9d; font-weight: 700; }
+
+/* entity.name.function, support.function #aa3731 bold */
 .md-typeset .highlight .nf,
-.md-typeset .highlight .nn,
-.md-typeset .highlight .nt { color: #4078f2; }
+.md-typeset .highlight .fm,
+.md-typeset .highlight .nd,
+.md-typeset .highlight .nb { color: #aa3731; font-weight: 700; }
+
+/* entity.name.exception #660000 */
+.md-typeset .highlight .ne { color: #660000; }
+
+/* constant.language, variable.language, support.constant, constant.numeric,
+   constant.character.entity #9c5d27 */
+.md-typeset .highlight .kc,
+.md-typeset .highlight .bp,
+.md-typeset .highlight .ni,
+.md-typeset .highlight .no,
+.md-typeset .highlight .m,
+.md-typeset .highlight .mb,
+.md-typeset .highlight .mf,
+.md-typeset .highlight .mh,
+.md-typeset .highlight .mi,
+.md-typeset .highlight .mo,
+.md-typeset .highlight .il { color: #9c5d27; }
+
+/* string and comment.documentation #448c27 */
 .md-typeset .highlight .s,
 .md-typeset .highlight .s1,
 .md-typeset .highlight .s2,
@@ -422,17 +456,37 @@ body,
 .md-typeset .highlight .sb,
 .md-typeset .highlight .sc,
 .md-typeset .highlight .sd,
-.md-typeset .highlight .se,
 .md-typeset .highlight .sh,
 .md-typeset .highlight .si,
-.md-typeset .highlight .sr,
-.md-typeset .highlight .ss { color: #50a14f; }
-.md-typeset .highlight .mi,
-.md-typeset .highlight .mf,
-.md-typeset .highlight .mh,
-.md-typeset .highlight .mo { color: #986801; }
+.md-typeset .highlight .sx,
+.md-typeset .highlight .ss,
+.md-typeset .highlight .dl { color: #448c27; }
+
+/* constant.character.escape #777777, string.regexp #4b69c6 */
+.md-typeset .highlight .se { color: #777777; }
+.md-typeset .highlight .sr { color: #4b69c6; }
+
+/* keyword.operator and punctuation #777777 */
 .md-typeset .highlight .o,
-.md-typeset .highlight .p { color: #383a42; }
+.md-typeset .highlight .p { color: #777777; }
+
+/* entity.other.attribute-name #8190a0 italic */
+.md-typeset .highlight .na { color: #8190a0; font-style: italic; }
+
+/* invalid #cd3131, markup.error and traceback #660000 */
+.md-typeset .highlight .err { color: #cd3131; }
+.md-typeset .highlight .gr,
+.md-typeset .highlight .gt { color: #660000; }
+
+/* diff and generic markup */
+.md-typeset .highlight .gd { color: #c73d20; }
+.md-typeset .highlight .gi { color: #448c27; }
+.md-typeset .highlight .gh,
+.md-typeset .highlight .gu { color: #aa3731; }
+.md-typeset .highlight .gp,
+.md-typeset .highlight .go { color: #777777; }
+.md-typeset .highlight .ge { font-style: italic; }
+.md-typeset .highlight .gs { font-weight: 700; }
 
 .md-typeset .admonition,
 .md-typeset details {

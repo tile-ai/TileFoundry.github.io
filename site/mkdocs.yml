@@ -9,7 +9,7 @@ theme:
   language: en
   font:
     text: Hanken Grotesk
-    code: Space Mono
+    code: Cascadia Code
   palette:
     scheme: default
     primary: red
