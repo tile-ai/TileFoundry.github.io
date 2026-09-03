@@ -66,8 +66,9 @@ nav:
   - Home: index.md
   - Tutorial:
       - Overview: tutorial/index.md
-      - Describe a model: tutorial/migrate.md
-      - Make it fast: tutorial/optimize.md
+      - Step 1 — Describe it: tutorial/migrate.md
+      - Step 2 — Make it fast: tutorial/optimize.md
+      - Authoring HIR: tutorial/authoring.md
   - Specifications:
       - Architecture: spec/architecture.md
       - Core IR: spec/core-ir.md
@@ -78,7 +79,6 @@ nav:
       - Parser: spec/parser.md
       - Semantic analysis: spec/semantic-analysis.md
       - Analysis: spec/analysis.md
-      - Schedule: spec/schedule.md
       - Passes: spec/passes.md
       - Target: spec/target.md
       - Code generation: spec/codegen.md
@@ -89,6 +89,7 @@ nav:
       - Visitor registry: spec/visitor-registry.md
       - Command-line interface: spec/cli.md
       - Code organization: spec/code-organization.md
+      - Spec rules: SPEC-RULES.md
   - Development: develop.md
 
 copyright: Copyright &copy; 2026 TileFoundry contributors
