@@ -35,6 +35,10 @@ exclude_docs: |
   javascripts/session-player.js
   plans/
   policies/
+  reports/
+
+hooks:
+  - hooks/repo_links.py
 
 markdown_extensions:
   - admonition
@@ -77,6 +81,7 @@ nav:
       - Overview: tutorial/index.md
       - Describing a published step: tutorial/migrate.md
       - Making one step fast: tutorial/optimize.md
+      - Choosing schedules and instructions: tutorial/schedule.md
       - Putting it all to work: tutorial/showcase.md
   - Specifications:
       - Architecture: spec/architecture.md
@@ -88,6 +93,7 @@ nav:
       - Parser: spec/parser.md
       - Semantic analysis: spec/semantic-analysis.md
       - Analysis: spec/analysis.md
+      - Schedule: spec/schedule.md
       - Passes: spec/passes.md
       - Target: spec/target.md
       - Code generation: spec/codegen.md

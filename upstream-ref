@@ -7,4 +7,4 @@
 # The first line that is neither blank nor a comment is the ref. A one-off render
 # of something else -- main, a branch, a SHA -- goes through the publish
 # workflow's source_ref input and does not touch this file.
-v0.0.2
+v0.0.3

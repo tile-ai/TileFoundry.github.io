@@ -75,6 +75,9 @@ jobs:
           echo "source=$assembled_source" >> "$GITHUB_OUTPUT"
 
       - name: Build documentation site
+        env:
+          # hooks/repo_links.py points links that leave docs/ at this ref.
+          TILEFOUNDRY_REF: ${{ steps.source.outputs.ref }}
         run: mkdocs build --strict --config-file "${{ steps.assemble.outputs.source }}/mkdocs.yml" --site-dir "$RUNNER_TEMP/site"
 
       - name: Upload GitHub Pages artifact
