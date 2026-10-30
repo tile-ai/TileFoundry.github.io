@@ -823,12 +823,26 @@ body,
 }
 
 .md-typeset figure {
-  margin: 1.4rem 0;
+  margin: 1.4rem auto;
   text-align: center;
+}
+
+/* Linked figures land under the sticky header otherwise. */
+.md-typeset figure[id] {
+  scroll-margin-top: 4.5rem;
 }
 
 .md-typeset figure > p {
   margin: 0;
+}
+
+/* A captioned table sits in a figure: drop the table's own vertical margins
+   (and Material's scroll wrapper margins) so the caption stays close to it. */
+.md-typeset figure > .md-typeset__scrollwrap,
+.md-typeset figure .md-typeset__table table:not([class]),
+.md-typeset figure > table:not([class]) {
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .md-typeset figcaption {
