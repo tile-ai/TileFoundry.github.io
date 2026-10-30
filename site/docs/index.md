@@ -18,7 +18,7 @@ A tile-based, agentic platform for automatic high-performance program generation
     <strong>Tutorial</strong>
     <small>Describe a published model, build a runtime twin, and iterate.</small>
   </a>
-  <a class="tf-card" href="blog/AI-compilers-in-the-agentic-era/">
+  <a class="tf-card" href="blog/">
     <span class="tf-card-index">02</span>
     <strong>Blog</strong>
     <small>Why compiler feedback matters when the programmer is an agent.</small>
