@@ -812,13 +812,13 @@ body,
   margin-right: auto;
 }
 
-.md-typeset img:is([src$="figures/usage.png"], [src$="figures/workflow.png"]) {
+.md-typeset img:is([src$="AI-compilers-in-the-agentic-era/usage.png"], [src$="AI-compilers-in-the-agentic-era/workflow.png"]) {
   display: block;
   margin-right: auto;
   margin-left: auto;
 }
 
-.md-typeset img[src$="figures/usage.png"] {
+.md-typeset img[src$="AI-compilers-in-the-agentic-era/usage.png"] {
   width: 60%;
 }
 
@@ -863,7 +863,7 @@ body,
 }
 
 @media screen and (max-width: 44.9375em) {
-  .md-typeset img[src$="figures/usage.png"] {
+  .md-typeset img[src$="AI-compilers-in-the-agentic-era/usage.png"] {
     width: 100%;
   }
 }

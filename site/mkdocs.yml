@@ -34,8 +34,6 @@ exclude_docs: |
   assets/mark.svg
   javascripts/session-player.js
   plans/
-  blog/figures/src/*
-  !blog/figures/src/previews/
   policies/
   reports/
 

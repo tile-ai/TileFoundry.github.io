@@ -16,7 +16,7 @@ Agent 在编写高性能 kernel 上展现出了惊人的生产力，而它的工
 
 **访问关系**（access relation）把计算域中的每一次运算与它读写的数据联系起来：一次 $(m,n,k)$ 操作读 $A[m,k]$ 与 $B[k,n]$，累加到 $C[m,n]$；同一个 $(m,n)$ 上的乘加构成归约（[图 1](#fig-1)）。
 
-![图 1](figures/src/previews/access-relation.png){ width="65%" }
+![图 1](figures/schedule-built-for-agents-to-solve/access-relation.png){ width="65%" }
 
 /// caption | #fig-1
 图 1　GEMM 的计算域，以及一块计算在三个面上的投影
@@ -26,7 +26,7 @@ Agent 在编写高性能 kernel 上展现出了惊人的生产力，而它的工
 
 以上是从算法的视角来看。换到硬件的视角，LLM 中的大部分计算由矩阵指令完成。与一次只处理一个元素的标量指令不同，矩阵指令一次完成一整块 tile 的乘加，这块计算有固定的形状。因此，矩阵指令也有自己的计算域，即它一次完成的全部运算：WGMMA 一次完成形状为 $64 \times n \times 16$ 的乘加，`mma.sync` 一次完成形状为 $16 \times 8 \times 16$ 的乘加（[图 2](#fig-2)）。我们把这类以 tile 为单位、形状固定的硬件指令称为 **atom**指令，把它的计算域称为 **atom domain**。选择指令并安排它们完成整个计算，就是把 atom domain 的各次实例映射到算子的计算域上，覆盖算子要求的全部计算：选择使用的 atom 类型、执行的顺序，以及它们读写的数据放在哪里。TileFoundry 正是以 atom 指令为单位描述 schedule，因此称之为 **atom schedule**。
 
-![图 2](figures/src/previews/atom-domain.png){ width="65%" }
+![图 2](figures/schedule-built-for-agents-to-solve/atom-domain.png){ width="65%" }
 
 /// caption | #fig-2
 图 2　atom domain 怎样覆盖算子的计算域
@@ -38,7 +38,7 @@ Agent 在编写高性能 kernel 上展现出了惊人的生产力，而它的工
 
 **已知条件。** 求解从既定的事实出发：算法一侧给出计算域、访问关系与数值契约；硬件一侧给出执行单元的并行层级、存储层级及其容量，以及每条指令自带的约束（[图 3](#fig-3)）。schedule 只能在这些事实限定的范围内作选择，而不能改变它们。
 
-![图 3](figures/src/previews/mapping-domain-hardware.png){ width="65%" }
+![图 3](figures/schedule-built-for-agents-to-solve/mapping-domain-hardware.png){ width="65%" }
 
 /// caption | #fig-3
 图 3　求解所需的既定事实：左侧是算法一端，右侧是 H200 一端
@@ -46,7 +46,7 @@ Agent 在编写高性能 kernel 上展现出了惊人的生产力，而它的工
 
 **决策变量。** 在这些事实之上，需要求解的是 computation domain 与 atom domain 之间的映射。我们在大量 kernel 上的调优经验表明，决定性能的选择大多可以归结为四个关键策略，每个策略回答 schedule 中的一项关键决策：**空间映射**，即每一份计算由哪些执行单元完成；**执行顺序**，即各份计算以及数据搬运的先后；**数据放置**，即数据存放在哪一级存储、按什么布局排列；**指令选择**，即每一份计算由哪条指令完成（[图 4](#fig-4)）。循环展开、预取时机等，则可以看作在这四个决策点之上进一步的局部调优。
 
-![图 4](figures/src/previews/mapping-candidates.png){ width="75%" }
+![图 4](figures/schedule-built-for-agents-to-solve/mapping-candidates.png){ width="75%" }
 
 /// caption | #fig-4
 图 4　四项关键决策，每项列出部分候选取值
@@ -60,7 +60,7 @@ Agent 在编写高性能 kernel 上展现出了惊人的生产力，而它的工
 
 求解 schedule 的困难主要来自两个方面：一是这四项决策各有许多候选，组合起来会形成很大的搜索空间；二是这些决策相互制约，很难分别求出各自的最优解再组合起来。
 
-![图 5](figures/src/previews/optimal-coupled-choices.png){ width="85%" }
+![图 5](figures/schedule-built-for-agents-to-solve/optimal-coupled-choices.png){ width="85%" }
 
 /// caption | #fig-5
 图 5　候选组合怎样被约束：紫色路径是本例的最快方案（树的展开顺序不代表求解顺序）
@@ -78,7 +78,7 @@ Agent 在编写高性能 kernel 上展现出了惊人的生产力，而它的工
 
 上一节的分析表明，schedule 是一组相互牵连的选择，需要放在一起反复调整。回顾 AI compiler 的发展，求解这组选择的方法大致经历了 progressive lowering、autotuning 与 coding agent 三个阶段（[图 6](#fig-6)）。TileFoundry 的 schedule 设计，正是从 coding agent 的工作特点出发的。
 
-![图 6](figures/src/previews/three-ways.png){ width="85%" }
+![图 6](figures/schedule-built-for-agents-to-solve/three-ways.png){ width="85%" }
 
 /// caption | #fig-6
 图 6　三种求解方式能触及的范围与得到的反馈
@@ -86,7 +86,7 @@ Agent 在编写高性能 kernel 上展现出了惊人的生产力，而它的工
 
 **Progressive lowering 把联合优化拆成逐级可解的子问题。** 每一层 IR 暴露当前阶段的决定，由启发式规则与 cost model 一次性做出，再 lower 到下一层；pass 的顺序由专家预先固定，形成一条 pass pipeline。这样拆开之后，每个子问题小到规则与 cost model 能够处理，各阶段也能独立开发、在不同硬件间重用。代价是单向性：***向下 lower 容易，反过来则困难得多。*** Lowering 把高层的表达逐步展开为细节，向上则要从展开后的细节中重新还原出高层的结构化信息和语义。Lower 伴随着信息的丢失，下游又建立在上游确立的不变量之上；信息一旦在某一层被抽象掉，之后的各层就很难再利用它，由此错过的优化机会也很难再找回（[图 7](#fig-7)）。
 
-![图 7](figures/src/previews/layer-view.png){ width="80%" }
+![图 7](figures/schedule-built-for-agents-to-solve/layer-view.png){ width="80%" }
 
 /// caption | #fig-7
 图 7　单向 lowering：横轴是可以改变的优化选择，纵轴是 lower 的层级
@@ -208,7 +208,7 @@ $$
 \begin{bmatrix}3@\mathrm{warpgroup}&128@\mathrm{participant}\\128&1\end{bmatrix}.
 $$
 
-![图 8](figures/src/previews/cta-mesh.png){ width="75%" }
+![图 8](figures/schedule-built-for-agents-to-solve/cta-mesh.png){ width="75%" }
 
 /// caption | #fig-8
 图 8　左侧是 H200 的硬件层级，右侧是程序中的 Topology 与 Mesh；对照两侧的 CTA 1，重新组织 12 个 warp 
@@ -330,7 +330,7 @@ $$
 
 每个 consumer 的 $4 \times 8 \times 4$ 组织，正是 WGMMA 契约中的 `execution mesh`（见[指令选择](#ex-contract)）。
 
-![图 9](figures/src/previews/compute-mesh.png){ width="68%" }
+![图 9](figures/schedule-built-for-agents-to-solve/compute-mesh.png){ width="68%" }
 
 /// caption | #fig-9
 图 9　两个 consumer 从线程 Mesh 中切出，重新组织成 $\mathcal{M}_{\mathrm{compute}}$；右侧矩阵的每格是一个线程
@@ -348,7 +348,7 @@ $$
 
 最外层的 `2@group` 把 accumulator 分给两个 consumer；组内的部分与 `facts` 中 $C$ 的 ShardLayout 一致（见[指令选择](#ex-contract)）。
 
-![图 10](figures/src/previews/shard-layout.png){ width="68%" }
+![图 10](figures/schedule-built-for-agents-to-solve/shard-layout.png){ width="68%" }
 
 /// caption | #fig-10
 图 10　沿虚线看一个坐标经 $\mathcal{L}_C$ 落到哪个元素，由哪个线程持有
@@ -361,7 +361,7 @@ $$
 \begin{bmatrix}2&8&8&4&16\\4096&512&64&16&1\end{bmatrix}.
 $$
 
-![图 11](figures/src/previews/smem-layout.png){ width="68%" }
+![图 11](figures/schedule-built-for-agents-to-solve/smem-layout.png){ width="68%" }
 
 /// caption | #fig-11
 图 11　左侧是 shared memory 的分配，右侧放大 $A$、$B$ 的 slot 0；沿虚线看一个坐标经 stride 与 swizzle 落到哪个偏移
@@ -419,7 +419,7 @@ for task in range(cta.persistent, 4352, 132):
 
 至此，四项决策都已确定，合起来就是最终方案（[图 12](#fig-12)）。
 
-![图 12](figures/src/previews/space-time.png){ width="75%" }
+![图 12](figures/schedule-built-for-agents-to-solve/space-time.png){ width="75%" }
 
 /// caption | #fig-12
 图 12　最终方案：左侧是 CTA 1 一个 $K$ 步的计算与数据，右侧是它在 H200 上的执行单元与存储
@@ -447,7 +447,7 @@ for task in range(cta.persistent, 4352, 132):
 
 这里选取 128、256、512、1024 token 四种长度，与 SGLang 0.5.21 做同口径测量[^h200]。四种长度下，相对 SGLang 的加速比分别为 **1.88×、1.41×、1.10×、1.03×**，生成的首个 token 均与 SGLang、transformers 一致。
 
-![图 13](figures/figure-4-cuda-prefill-performance.png){ width="62%" }
+![图 13](figures/schedule-built-for-agents-to-solve/figure-4-cuda-prefill-performance.png){ width="62%" }
 
 /// caption | #fig-13
 图 13　H200 上完整 Prefill 的性能对比，误差线表示计时最小值与最大值
@@ -459,7 +459,7 @@ for task in range(cta.persistent, 4352, 132):
 
 到了 `T=1024`，agent 转而增加同一 CTA 内的 K/V 复用。如[图 14](#fig-14) 下半部分所示，agent 把两个 query head 合并到一个 CTA 中，由两个 consumer warpgroup 分别计算各自的 P 与输出；结果留在各自的寄存器中，K/V 在 shared memory 中共享。CTA 数量从 384 降到 192，K/V 的重复读取减少，core 耗时从 55.7 微秒降到 45.2 微秒。这两项调整，一项改变输出维的切分，一项改变 head 的分组，改的都是执行单元与数据分布之间的对应关系；在 Layout 系统中，两者都通过修改这一映射来表达。
 
-![图 14](figures/figure-5-cuda-attention-tiling.png){ width="62%" }
+![图 14](figures/schedule-built-for-agents-to-solve/figure-5-cuda-attention-tiling.png){ width="62%" }
 
 /// caption | #fig-14
 图 14　Attention 的逻辑计算域与 CUDA 映射，上半部分拆分同一 head 的输出域，下半部分将两个 head 映射到同一 CTA
@@ -510,7 +510,7 @@ TileFoundry 是一个 agent compiler framework，并不绑定某一种硬件。�
 
 再看空间映射与执行顺序。$N$ 方向划分为 64 列的面板任务，交给 8 个 worker 处理。对于每个 64 列面板，先处理其中 32 列，沿 $M$ 方向逐块计算，再处理另外 32 列；每个 $32 \times 32$ 输出块都先沿 $K$ 重复执行 outer product，在 Z 中完成 FP32 累加（[图 15](#fig-15)）。
 
-![图 15](figures/figure-7-amx-projection-tiling.png){ width="72%" }
+![图 15](figures/schedule-built-for-agents-to-solve/figure-7-amx-projection-tiling.png){ width="72%" }
 
 /// caption | #fig-15
 图 15　把上述安排放回计算域：看 $32 \times 32 \times 1$ 的 atom domain 怎样对应 AMX 的 Y、X、Z，箭头是遍历顺序
@@ -520,7 +520,7 @@ TileFoundry 是一个 agent compiler framework，并不绑定某一种硬件。�
 
 下面的测量比较的是在给定的 native runtime 上各条路径的执行性能，并不是加入这些指令契约前后的对照；计时不包含 prepare、编译与加载[^amx]。AMX 路径把同一份 Q8_0 checkpoint 的投影权重准备为 FP16，与 llama.cpp 的 Q8_0、F16 路径比较：八组测量中，相对 Q8_0 的加速比为 **1.14–1.43×**，相对 F16 为 **1.01–2.11×**。三条路径在投影计算中采用的数值运算方式不同（[图 16](#fig-16)）。
 
-![图 16](figures/figure-6-amx-prefill-performance.png){ width="65%" }
+![图 16](figures/schedule-built-for-agents-to-solve/figure-6-amx-prefill-performance.png){ width="65%" }
 
 /// caption | #fig-16
 图 16　M2 Pro 上两个模型的 Prefill 性能，比较 AMX packed-FP16、llama.cpp Q8_0 与 F16 路径
@@ -532,7 +532,7 @@ TileFoundry 源自开源算子库 [TileOPs](https://github.com/tile-ai/TileOPs) 
 
 TileOPs 的每个算子从一份 YAML spec 开始，spec 声明算子的签名、workload 与 roofline；coding agent 借助 TileFoundry 编写与调优 kernel，相应的 PR 以 [`foundry` 标签](https://github.com/tile-ai/TileOPs/pulls?q=is%3Apr+label%3Afoundry+is%3Amerged) 标记。TileOPs 每晚在 H200 上把每一行 workload 与 PyTorch、FlashInfer、FA3、FLA、vLLM、DeepGEMM、cuBLAS、torch.compile 等已有实现对比，用最快实现的耗时除以 TileOPs 的耗时：比值不低于 0.99，记为不慢于最快的已有实现；一个算子的每一行都满足这一条件，记为达到 SOTA。行级结果取自 v0.1.0 发布提交上的 [nightly run](https://github.com/tile-ai/TileOPs/actions/runs/40344177035)，算子级结果取自 10 月 28 日的 nightly[^tileops]。
 
-![图 17](figures/src/previews/tileops-sota-ops.png){ width="78%" }
+![图 17](figures/schedule-built-for-agents-to-solve/tileops-sota-ops.png){ width="78%" }
 
 /// caption | #fig-17
 图 17　TileOPs 中达到 SOTA 的算子数（H200），蓝色是经 `foundry` PR 优化后达到的部分
@@ -560,4 +560,4 @@ TileOPs 的开发过程，也是 TileFoundry 逐步形成的过程。在此之�
 
 [^amx]: [测量](https://github.com/tile-ai/TileFoundry/blob/1457a80a/examples/qwen_prefill-amx/README.md)使用 8 个 worker、batch 1、无历史，每种长度预热后测 5 次取中位数，不计 prepare、编译和加载。
 
-[^tileops]: 数据来自 [TileOPs-nightly](https://github.com/tile-ai/TileOPs-nightly/tree/snapshots) 的 benchmark 快照，每周取一晚：NVIDIA H200，SM 时钟锁定在 1500 MHz。一行的比值为最快已有实现的耗时除以 TileOPs 的耗时，不低于 0.99 即计为不慢于最快的已有实现，阈值与判定规则都与 TileOPs README 中的徽章一致。每晚与当晚测量的全部已有实现对比；8 月 22 日起加入了 torch.compile、FlagGems、cuDNN 等，10 月 28 日共 48 个。PR 的标题或正文写明了某个算子或它的 kernel，就算这个 PR 优化过这个算子；没有写明的，取合入后第一次 nightly 中同一算子族里变快 3% 以上的算子。6 月 26 日到 7 月 26 日的 nightly 计时有误（CUPTI 失败后改用 CUDA events，每次调用多计 50–60 µs），图中 7 月的 4 周按前后两次测量线性插值。PR 数据为 `foundry` 标签下已合并的 PR。数据与绘图脚本见 [`tileops_sota.py`](https://github.com/tile-ai/TileFoundry.github.io/blob/main/site/docs/blog/figures/src/tileops_sota.py)。
+[^tileops]: 数据来自 [TileOPs-nightly](https://github.com/tile-ai/TileOPs-nightly/tree/snapshots) 的 benchmark 快照，每周取一晚：NVIDIA H200，SM 时钟锁定在 1500 MHz。一行的比值为最快已有实现的耗时除以 TileOPs 的耗时，不低于 0.99 即计为不慢于最快的已有实现。
