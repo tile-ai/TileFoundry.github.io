@@ -78,7 +78,7 @@ AI compilers 则**长于 DL 程序的分析，能对程序语义和运行时行�
 
 Agent 与 TileFoundry 之间交互的对象是两份程序：[HIR](https://tile-ai.github.io/TileFoundry.github.io/spec/hir/) 和 [runtime twin](https://tile-ai.github.io/TileFoundry.github.io/spec/runtime/)。HIR 能够以整个模型为单位（不局限于单个 operator）描述独立于任何硬件的逻辑计算过程；而 runtime twin 服务于性能，可以由任何后端具体地实现。TileFoundry 的 [`check`](#usage "TileFoundry 使用接口，下一节展开") 严格检查这两份程序的语义是否等价。图 1 是这个过程的全貌。
 
-![图 1 TileFoundry 的使用方式](figures/usage.png)
+![图 1 TileFoundry 的使用方式](figures/AI-compilers-in-the-agentic-era/usage.png)
 
 /// caption
 图 1　TileFoundry 使用过程中developer，agent和AI compiler的交互过程。
@@ -289,7 +289,7 @@ H200 上本次实测，PyTorch reference 为 **34.67 μs**，CUDA twin 为 **7
 
 回顾 agent 与 TileFoundry 交互的整个过程，在通过了 `analyze` 提供的静态代价分析、`check` 检查，完成对 HIR 迭代，收敛之后进入 runtime twin 程序优化硬件相关的实现细节，硬件相关的优化再次收敛后，进行实测获取真机上的性能数据，然后开始下一轮优化，如此往复。图 2 进一步以优化 attention 为例展示这个过程：agent 与 TileFoundry 通过source-to-source 方式交互，使用`analyze`, `check` 对一个给定的优化方案进行分析和验证。
 
-![图 2 TileFoundry 优化 attention 的 workflow](figures/workflow.png)
+![图 2 TileFoundry 优化 attention 的 workflow](figures/AI-compilers-in-the-agentic-era/workflow.png)
 
 /// caption
 图 2　使用 TileFoundry 优化 attention 的过程示意图。
